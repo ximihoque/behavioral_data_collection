@@ -1,0 +1,23 @@
+{
+    "questions": [
+        {
+            "prompt": "The box is sealed. Schrödinger's cat is inside with its owner's deadly apparatus. You might think that it's either alive or dead, but you'd be wrong: many quantum physicists would say that it's BOTH alive and dead. The cat somehow exists in both possible states until the universe is forced to make up its mind. What is this strange situation called?",
+            "labels": [
+                "Entanglement of states",
+                "Quantum duality",
+                "A superposition of states",
+                "Quantum relativity"
+            ],
+            "required": true
+        },
+        {
+            "prompt": "How is a particle's wavelength and momentum related?",
+            "labels": [
+                "inversely related",
+                "directly related",
+                "not related"
+            ],
+            "required": true
+        }
+    ]
+}
