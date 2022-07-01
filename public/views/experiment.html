@@ -48,7 +48,11 @@
 	var instructions = {
 		type: "instructions",
 	};
-
+	var scale_bool = ["Yes", "No"]
+	var scale_engage = ["0 (not engaged/disengaged)",
+						"1 (barely engaged)",
+   						"2 (engaged)",
+   "3 (highly engaged)"]
 	var scale = ["(Low) 1", "2", "(Neutral) 3 ", "4", "5 (High)"];
 
 	var likely = ["1 (Low)", "2", " (Neutral) 3 ", "4", "5 (High)"];
@@ -337,6 +341,14 @@
 		type: "fullscreen",
 		fullscreen_mode: false,
 	};
+	var post_video_mandate = {
+		type: "survey-likert",
+		questions: [
+			{ prompt: "Have you seen the video before?", labels: scale_bool, required: true },
+			{ prompt: "Did you find the content of the video interesting?", labels: scale_bool, required: true},
+			{ prompt: "On a scale of 0 to 3, how engaged were you while watching the video?", labels: scale_engage, required: true}
+		]
+	}
 	var video_start_page = {
 		type: "html-keyboard-response",
 		stimulus: "Now the Videos will play",
@@ -345,7 +357,7 @@
 		on_start: function () {
 			if (!isRecording)
 				mediaRecorder.start()
-				isRecording = true
+			isRecording = true
 
 			jsPsych.extensions["webgazer"].resume();
 			//jsPsych.extensions["webgazer"].showPredictions();
@@ -434,7 +446,7 @@
 		on_start: function () {
 			if (!isRecording)
 				mediaRecorder.start()
-				isRecording = true
+			isRecording = true
 		},
 		extensions: [
 			{
@@ -473,7 +485,7 @@
 			isRecording = false;
 		}
 	};
-	
+
 
 	var video_trial_3 = {
 		type: "video-button-response",
@@ -497,7 +509,7 @@
 		on_start: function () {
 			if (!isRecording)
 				mediaRecorder.start()
-				isRecording = true
+			isRecording = true
 		},
 		extensions: [
 			{
@@ -571,7 +583,7 @@
 		on_start: function () {
 			if (!isRecording)
 				mediaRecorder.start()
-				isRecording = true
+			isRecording = true
 		},
 		on_finish: function () {
 			mediaRecorder.stop()
@@ -587,7 +599,7 @@
 			},
 		],
 	};
-	
+
 	var selfAssesment = {
 		type: "survey-likert",
 		questions: [
@@ -606,20 +618,23 @@
 		// demogarphics,
 		// overview,
 		declaration,
-		// personality_survey,
+		personality_survey,
 		init_camera,
 		// instructions_cal,
-		// val,
-		// validation_instructions,
-		// validate,
+		val,
+		validation_instructions,
+		validate,
 		fullscreen_trial,
 		video_start_page,
 		video_trial_1,
 		post_video_survey_1,
+		post_video_mandate,
 		video_trial_2,
 		post_video_survey_2,
+		post_video_mandate,
 		video_trial_3,
 		post_video_survey_3,
+		post_video_mandate,
 		video_trial_4
 
 	];
@@ -751,7 +766,7 @@
 					success: function (response) {
 						chunk_n = chunk_n + 1;
 						// alert("Video saved at server successfully!");
-						if (chunk_n == max_chunks) 
+						if (chunk_n == max_chunks)
 							Redirect();
 					},
 					error: function (e) {
@@ -807,8 +822,8 @@
 						data: jsPsych.data.get().addToAll({ tag: "<END>" }).csv(),
 					};
 					saveData(data);
-					
-					
+
+
 					// mediaRecorder.stop();
 					// Window.close()
 					// Redirect();
