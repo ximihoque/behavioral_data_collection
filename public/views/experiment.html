@@ -40,7 +40,7 @@
 	// console.log(readQuestion('one'));
 	var chunks = [];
 	var chunk_n = 0;
-	var max_chunks = 3;
+	var max_chunks = 4;
 	var mediaRecorder;
 	var isRecording = false;
 
@@ -345,6 +345,7 @@
 		on_start: function () {
 			if (!isRecording)
 				mediaRecorder.start()
+				isRecording = true
 
 			jsPsych.extensions["webgazer"].resume();
 			//jsPsych.extensions["webgazer"].showPredictions();
@@ -361,7 +362,7 @@
 		"</div>"
 	var video_trial_1 = {
 		type: "video-button-response",
-		stimulus: [`../video/one.mp4`],
+		stimulus: [`https://storage.googleapis.com/kddi_assessment_data/one.mp4`],
 		choices: ["Continue"],
 		button_html: '<div style="font-size:40px;">%choice%</div>',
 		margin_vertical: "2px",
@@ -413,7 +414,7 @@
 	};
 	var video_trial_2 = {
 		type: "video-button-response",
-		stimulus: [`../video/two.mp4`],
+		stimulus: [`https://storage.googleapis.com/kddi_assessment_data/two.mp4`],
 		choices: ["Continue"],
 		button_html: '<div style="font-size:40px;">%choice%</div>',
 		margin_vertical: "2px",
@@ -433,6 +434,7 @@
 		on_start: function () {
 			if (!isRecording)
 				mediaRecorder.start()
+				isRecording = true
 		},
 		extensions: [
 			{
@@ -475,7 +477,7 @@
 
 	var video_trial_3 = {
 		type: "video-button-response",
-		stimulus: [`../video/three.mp4`],
+		stimulus: [`https://storage.googleapis.com/kddi_assessment_data/three.mp4`],
 		choices: ["Continue"],
 		button_html: '<div style="font-size:40px;">%choice%</div>',
 		margin_vertical: "2px",
@@ -495,6 +497,7 @@
 		on_start: function () {
 			if (!isRecording)
 				mediaRecorder.start()
+				isRecording = true
 		},
 		extensions: [
 			{
@@ -533,12 +536,77 @@
 			isRecording = false;
 		}
 	};
+	var selfAssesment = {
+		type: "survey-likert",
+		questions: [
+			{
+				prompt: "Does your system have a working webcam?",
+				name: "Webcam",
+				labels: scale_1,
+				required: true,
+			}
+		],
+		preamble: "<h1>Self Assessment</h1>",
+		randomize_question_order: false,
+	}
+	var video_trial_4 = {
+		type: "video-button-response",
+		stimulus: [`https://storage.googleapis.com/kddi_assessment_data/four.mp4`],
+		choices: ["Continue"],
+		button_html: '<div style="font-size:40px;">%choice%</div>',
+		margin_vertical: "2px",
+		margin_horizontal: "2px",
+		prompt: video_prompt,
+		width: window.screen.width - 100,
+		height: window.screen.height - 100,
+		autoplay: true,
+		response_ends_trial: true,
+		response_allowed_while_playing: true,
+		data: {
+			time: function () {
+				var n = new Date();
+				return n.getTime();
+			},
+		},
+		on_start: function () {
+			if (!isRecording)
+				mediaRecorder.start()
+				isRecording = true
+		},
+		on_finish: function () {
+			mediaRecorder.stop()
+			isRecording = false;
+		},
+		extensions: [
+			{
+				type: "webgazer",
+				params: {
+					targets: ["#jspsych-video-button-response-stimulus"],
+				},
+
+			},
+		],
+	};
+	
+	var selfAssesment = {
+		type: "survey-likert",
+		questions: [
+			{
+				prompt: "Does your system have a working webcam?",
+				name: "Webcam",
+				labels: scale_1,
+				required: true,
+			}
+		],
+		preamble: "<h1>Self Assessment</h1>",
+		randomize_question_order: false,
+	}
 	var timeline = [
 		// preload,
 		// demogarphics,
 		// overview,
 		declaration,
-		personality_survey,
+		// personality_survey,
 		init_camera,
 		// instructions_cal,
 		// val,
@@ -551,7 +619,8 @@
 		video_trial_2,
 		post_video_survey_2,
 		video_trial_3,
-		post_video_survey_3
+		post_video_survey_3,
+		video_trial_4
 
 	];
 
@@ -626,9 +695,6 @@
 			//let stop = document.getElementById("btnStop");
 			//let vidSave = document.getElementById("vid2");
 			mediaRecorder = new MediaRecorder(mediaStreamObj);
-
-			mediaRecorder.start();
-			isRecording = true;
 
 			console.log('state', mediaRecorder.state);
 			// stop.addEventListener("click", (ev) => {
