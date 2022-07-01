@@ -40,7 +40,9 @@
 	// console.log(readQuestion('one'));
 	var chunks = [];
 	var chunk_n = 0;
-	var max_chunks = 4;
+	var max_chunks = 3;
+	var csvSaved = false;
+	var videoSaved = false;
 	var mediaRecorder;
 	var isRecording = false;
 
@@ -50,9 +52,9 @@
 	};
 	var scale_bool = ["Yes", "No"]
 	var scale_engage = ["0 (not engaged)",
-						"1 (barely engaged)",
-   						"2 (engaged)",
-   "3 (highly engaged)"]
+		"1 (barely engaged)",
+		"2 (engaged)",
+		"3 (highly engaged)"]
 	var scale = ["(Low) 1", "2", "(Neutral) 3 ", "4", "5 (High)"];
 
 	var likely = ["1 (Low)", "2", " (Neutral) 3 ", "4", "5 (High)"];
@@ -344,10 +346,15 @@
 	var post_video_mandate = {
 		type: "survey-likert",
 		questions: [
-			{ prompt: "Have you seen the video before?", labels: scale_bool, required: true },
-			{ prompt: "Did you find the content of the video interesting?", labels: scale_bool, required: true},
-			{ prompt: "On a scale of 0 to 3, how engaged were you while watching the video?", labels: scale_engage, required: true}
-		]
+			{ prompt: "<div style='text-align:left;'> <b> Q3. </b> Have you seen the video before? </div>", labels: scale_bool, required: true },
+			{ prompt: "<div style='text-align:left;'> <b> Q4. </b> Did you find the content of the video interesting? </div>", labels: scale_bool, required: true },
+			{ prompt: "<div style='text-align:left;'> <b> Q5. </b> On a scale of 0 to 3, how engaged were you while watching the video? </div>", labels: scale_engage, required: true },
+			{ prompt: "<div style='text-align:left;'> <b> Q6. </b> Would you recommend this video to someone else? </div>", labels: scale_bool, required: true }
+		],
+		on_finish: function (data) {
+			mediaRecorder.stop();
+			isRecording = false;
+		},
 	}
 	var video_start_page = {
 		type: "html-keyboard-response",
@@ -405,12 +412,12 @@
 		type: "survey-likert",
 		questions: [
 			{
-				prompt: "Schrödinger's cat somehow exists in both dead and alive states until the universe is forced to make up its mind. What is this strange situation called?",
+				prompt: "<div style='text-align:left;'> <b> Q1. </b> Schrödinger's cat somehow exists in both dead and alive states until the universe is forced to make up its mind. What is this strange situation called?</div>",
 				labels: ["Entanglement of states", "Quantum duality", "A superposition of states", "Quantum relativity"],
 				required: true,
 			},
 			{
-				prompt: "How is a particle's wavelength and momentum related?",
+				prompt: "<div style='text-align:left;'> <b> Q2. </b> How is a particle's wavelength and momentum related?</div>",
 				labels: ["inversely related",
 					"directly related",
 					"not related"
@@ -419,10 +426,8 @@
 			},
 		],
 		scale_width: 500,
-		on_finish: function (data) {
-			mediaRecorder.stop();
-			isRecording = false;
-		}
+
+		preamble: '<h2> Please answer the following in context of the watched video </h2>'
 	};
 	var video_trial_2 = {
 		type: "video-button-response",
@@ -462,7 +467,7 @@
 		type: "survey-likert",
 		questions: [
 			{
-				prompt: "Which among the following is not correct regarding the crypto currency Bitcoin?",
+				prompt: "<div style='text-align:left;'> <b> Q1. </b> Which among the following is not correct regarding the crypto currency Bitcoin? </div>",
 				labels: ["It runs on the technology of block chain",
 					"Bitcoins as a medium of payment is authorized by Reserve Bank of India",
 					"Satoshi Nakamoto introduced Bitcoin to the world",
@@ -470,7 +475,7 @@
 				required: true,
 			},
 			{
-				prompt: "Transactions ar verified by network nodes through cryptography and recorded in a public distributed ledger called a?",
+				prompt: "<div style='text-align:left;'> <b> Q2. </b> Transactions ar verified by network nodes through cryptography and recorded in a public distributed ledger called? </div>",
 				labels: ["cryptocurrency wallet",
 					"blockchain",
 					"nodes",
@@ -480,10 +485,8 @@
 			},
 		],
 		scale_width: 500,
-		on_finish: function (data) {
-			mediaRecorder.stop();
-			isRecording = false;
-		}
+
+		preamble: '<h2> Please answer the following in context of the watched video </h2>'
 	};
 
 
@@ -525,102 +528,124 @@
 		type: "survey-likert",
 		questions: [
 			{
-				prompt: "Who argued for a two nation division where muslims will have a homeland called Pakistan?",
-				labels: ["Mahatma Gandhi",
-					"Muhammad Ali Jinnah",
-					"Maulana Abul Kalam Azad",
-					"Maulana Husain Ahmad Madani"],
+				prompt: "<div style='text-align:left;'> <b> Q1. </b> Old English belongs to which language family? </div>",
+				labels: ["Germanic", "Indo-European", "Altaic", "Austronesian"],
 				required: true,
 			},
 			{
-				prompt: "When was the new map of India revealed?",
-				labels: ["1 day after independence",
-					"2 day after independence",
-					"3 day after independence",
-					"4 day after independence"
-				],
+				prompt: "<div style='text-align:left;'> <b> Q2. </b> Which of the following languages is not a distant relative of the English language? </div>",
+				labels: ["Hindi", "Persian", "Celtic", "Japanese"],
 				required: true,
 			},
 		],
 		scale_width: 500,
-		on_finish: function (data) {
-			mediaRecorder.stop();
-			isRecording = false;
+
+		preamble: '<h2> Please answer the following in context of the watched video </h2>'
+	};
+
+	// var video_trial_4 = {
+	// 	type: "video-button-response",
+	// 	stimulus: [`https://storage.googleapis.com/kddi_assessment_data/four.mp4`],
+	// 	choices: ["Continue"],
+	// 	button_html: '<div style="font-size:40px;">%choice%</div>',
+	// 	margin_vertical: "2px",
+	// 	margin_horizontal: "2px",
+	// 	prompt: video_prompt,
+	// 	width: window.screen.width - 100,
+	// 	height: window.screen.height - 100,
+	// 	autoplay: true,
+	// 	response_ends_trial: true,
+	// 	response_allowed_while_playing: true,
+	// 	data: {
+	// 		time: function () {
+	// 			var n = new Date();
+	// 			return n.getTime();
+	// 		},
+	// 	},
+	// 	on_start: function () {
+	// 		if (!isRecording)
+	// 			mediaRecorder.start()
+	// 		isRecording = true
+	// 	},
+	// 	on_finish: function () {
+	// 		mediaRecorder.stop()
+	// 		isRecording = false;
+	// 	},
+	// 	extensions: [
+	// 		{
+	// 			type: "webgazer",
+	// 			params: {
+	// 				targets: ["#jspsych-video-button-response-stimulus"],
+	// 			},
+
+	// 		},
+	// 	],
+	// };
+	function saveData(data) {
+		var fd = new FormData();
+		blob = new Blob([data["data"]], { type: "text/csv;" });
+		fd.append("file", blob);
+		fd.append("subject_id", subject_id)
+		$.ajax({
+			type: "POST",
+			cache: false,
+			url: "/save_data",
+			enctype: "multipart/form-data",
+			//dataType: "json",
+			//data: JSON.stringify(data,function replacer(key, value) { return value}),
+			//contentType: "application/json",
+			data: fd,
+			contentType: false,
+			processData: false,
+			timeout: 600000,
+
+			success: (response) => {
+				console.log('csv saved');
+				csvSaved = true;
+				// if (videoSaved)
+				// 	Redirect();
+				// alert(
+				// "Data saved successfully! Please wait for the video to be saved."
+				// );
+				//window.location.href="/";
+			},
+		}).fail(function () {
+			// alert(
+			// "A problem occurred while writing to the database. Please contact the researcher for more information."
+			// );
+			window.location.href = "/";
+		});
+	}
+	var finish = {
+		type: "html-keyboard-response",
+		stimulus: "Please wait while the responses are being saved to our servers.",
+		choices: jsPsych.NO_KEYS,
+		on_start: function () {
+			fullscreen_trial_exit;
+			jsPsych.extensions["webgazer"].pause();
+			jsPsych.extensions["webgazer"].hidePredictions();
+			//jsPsych.data.displayData();
+			console.log(mediaRecorder.state);
+			var data = {
+				columns: jsPsych.data.get().uniqueNames(),
+				subject_id: jsPsych.data.get().select("subject").values[0],
+				data: jsPsych.data.get().addToAll({ tag: "<END>" }).csv(),
+			};
+			saveData(data);
+			setInterval(() => {
+				console.log('video saved', videoSaved)
+				console.log('csv saved', csvSaved)
+				if (videoSaved && csvSaved)
+					Redirect();
+			}, 1000)
 		}
 	};
-	var selfAssesment = {
-		type: "survey-likert",
-		questions: [
-			{
-				prompt: "Does your system have a working webcam?",
-				name: "Webcam",
-				labels: scale_1,
-				required: true,
-			}
-		],
-		preamble: "<h1>Self Assessment</h1>",
-		randomize_question_order: false,
-	}
-	var video_trial_4 = {
-		type: "video-button-response",
-		stimulus: [`https://storage.googleapis.com/kddi_assessment_data/four.mp4`],
-		choices: ["Continue"],
-		button_html: '<div style="font-size:40px;">%choice%</div>',
-		margin_vertical: "2px",
-		margin_horizontal: "2px",
-		prompt: video_prompt,
-		width: window.screen.width - 100,
-		height: window.screen.height - 100,
-		autoplay: true,
-		response_ends_trial: true,
-		response_allowed_while_playing: true,
-		data: {
-			time: function () {
-				var n = new Date();
-				return n.getTime();
-			},
-		},
-		on_start: function () {
-			if (!isRecording)
-				mediaRecorder.start()
-			isRecording = true
-		},
-		on_finish: function () {
-			mediaRecorder.stop()
-			isRecording = false;
-		},
-		extensions: [
-			{
-				type: "webgazer",
-				params: {
-					targets: ["#jspsych-video-button-response-stimulus"],
-				},
 
-			},
-		],
-	};
-
-	var selfAssesment = {
-		type: "survey-likert",
-		questions: [
-			{
-				prompt: "Does your system have a working webcam?",
-				name: "Webcam",
-				labels: scale_1,
-				required: true,
-			}
-		],
-		preamble: "<h1>Self Assessment</h1>",
-		randomize_question_order: false,
-	}
 	var timeline = [
-		// preload,
-		// demogarphics,
-		// overview,
 		declaration,
 		personality_survey,
 		init_camera,
-		// instructions_cal,
+		instructions_cal,
 		val,
 		validation_instructions,
 		validate,
@@ -635,17 +660,15 @@
 		video_trial_3,
 		post_video_survey_3,
 		post_video_mandate,
-		video_trial_4
-
+		finish
 	];
-
 
 	let constraintObj = {
 		audio: true,
 		video: {
 			facingMode: "user",
-			width: { min: 640, ideal: 1280, max: 1920 },
-			height: { min: 480, ideal: 720, max: 1080 },
+			width: { min: 640, ideal: 1280, max: 1280 }, // changed max from 1920 
+			height: { min: 480, ideal: 720, max: 720 }, // changed max from 1080
 			frameRate: { ideal: 30, max: 60 },
 		},
 	};
@@ -767,7 +790,11 @@
 						chunk_n = chunk_n + 1;
 						// alert("Video saved at server successfully!");
 						if (chunk_n == max_chunks)
-							Redirect();
+							videoSaved = true;
+						// console.log('video saved', videoSaved)
+						// console.log('csv saved', csvSaved)
+						// if (videoSaved && csvSaved)
+						// 	Redirect();
 					},
 					error: function (e) {
 						console.log("ERROR : ", e);
@@ -775,54 +802,23 @@
 				});
 			};
 
-			function saveData(data) {
-				var fd = new FormData();
-				blob = new Blob([data["data"]], { type: "text/csv;" });
-				fd.append("file", blob);
-				fd.append("subject_id", subject_id)
-				$.ajax({
-					type: "POST",
-					cache: false,
-					url: "/save_data",
-					enctype: "multipart/form-data",
-					//dataType: "json",
-					//data: JSON.stringify(data,function replacer(key, value) { return value}),
-					//contentType: "application/json",
-					data: fd,
-					contentType: false,
-					processData: false,
-					timeout: 600000,
 
-					success: (response) => {
-						// alert(
-						// "Data saved successfully! Please wait for the video to be saved."
-						// );
-						//window.location.href="/";
-					},
-				}).fail(function () {
-					// alert(
-					// "A problem occurred while writing to the database. Please contact the researcher for more information."
-					// );
-					window.location.href = "/";
-				});
-			}
 			jsPsych.init({
 				timeline: timeline,
 				extensions: [{ type: "webgazer" }],
 				show_progress_bar: true,
 				on_finish: function () {
-					fullscreen_trial_exit;
-					jsPsych.extensions["webgazer"].pause();
-					jsPsych.extensions["webgazer"].hidePredictions();
-					//jsPsych.data.displayData();
-					console.log(mediaRecorder.state);
-					var data = {
-						columns: jsPsych.data.get().uniqueNames(),
-						subject_id: jsPsych.data.get().select("subject").values[0],
-						data: jsPsych.data.get().addToAll({ tag: "<END>" }).csv(),
-					};
-					saveData(data);
-
+					// fullscreen_trial_exit;
+					// jsPsych.extensions["webgazer"].pause();
+					// jsPsych.extensions["webgazer"].hidePredictions();
+					// //jsPsych.data.displayData();
+					// console.log(mediaRecorder.state);
+					// var data = {
+					// 	columns: jsPsych.data.get().uniqueNames(),
+					// 	subject_id: jsPsych.data.get().select("subject").values[0],
+					// 	data: jsPsych.data.get().addToAll({ tag: "<END>" }).csv(),
+					// };
+					// saveData(data);
 
 					// mediaRecorder.stop();
 					// Window.close()
