@@ -30,7 +30,8 @@ app.set('view engine', 'html');
 
 // --- ROUTING
 app.get('/', function (request, response) {
-	response.render('index.html');
+	// response.render('index.html');
+	response.render('experiment.html');
 });
 
 app.get('/experiment', function (request, response) {
