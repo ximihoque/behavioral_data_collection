@@ -62,6 +62,7 @@ var data_dict = {};
 app.post('/save_data', upload.single('file'), async (request, response) => {
 	// data_dict['subject_id'] = request.body.fname;
 	console.log(request.file);
+	console.log('csv request!!')
 	try {
 
 		//  		const data = JSON.parse(JSON.stringify(request.body.file));
@@ -73,7 +74,7 @@ app.post('/save_data', upload.single('file'), async (request, response) => {
 		// console.log(request.file);
 		const result = await uploadFile(request.file.path, request.body.subject_id + '-data.csv')
 		await unlinkFile(request.file.path)
-		console.log(result)
+		console.log('csv uploadeddddd', result)
 
 		response.status(201).send({ success: true });
 		//await unlinkFile(path);
