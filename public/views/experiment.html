@@ -13,11 +13,14 @@
 	<script src="../../jspsych/plugins/jspsych-html-keyboard-response.js"></script>
 	<script src="../../jspsych/plugins/jspsych-survey-likert.js"></script>
 	<script src="../../jspsych/plugins/jspsych-survey-text.js"></script>
+	<script src="../../jspsych/plugins/jspsych-survey-html-form.js"></script>
 	<script src="../../jspsych/plugins/jspsych-video-button-response.js"></script>
 	<script src="../../jspsych/plugins/jspsych-fullscreen.js"></script>
 	<script src="../../jspsych/plugins/jspsych-instructions.js"></script>
 	<script src="../../jspsych/plugins/jspsych-image-button-response.js"></script>
 	<script src="../../jspsych/plugins/jspsych-webgazer-validate.js"></script>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+		integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 	<script src="../saver/fileSaver.js"></script>
 	<!-- <script src="../js/utils.js"></script> -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
@@ -36,7 +39,7 @@
 	function Redirect() {
 		window.location.href = "/endpage";
 	}
-	var subject_id = jsPsych.randomization.randomID();
+	var subject_id = jsPsych.randomization.randomID(10);
 	// console.log(readQuestion('one'));
 	var chunks = [];
 	var chunk_n = 0;
@@ -186,27 +189,57 @@
 	};
 
 	// Need to take demographic information from the user .
+
+	var basic_info = {
+		type: "survey-html-form",
+		preamble: "<h1>Basic information</h1>",
+		html: ' <p> Name <br>  <input type="text" id="firstname" name="firstname" size="50" required/> </p> \
+				<p> Age  <br> <input type="number" id="age" name="age" min="15" max="50" required> </p> \
+				<p> Gender <br>  <select name="gender" id="gender" required>  \
+  									<option value="male">Male</option> \
+  									<option value="female">Female</option> \
+  									<option value="other">Prefer Not to Say</option> \
+							 </select> </p>  \
+				<p> Email ID <br> <input type="text" id="email_id" name="email_id" size="50" required/> </p><br><br>',
+		autofocus: 'test-resp-box',
+		on_finish: function (data) {
+			console.log(jsPsych.data.get().select("response")["values"]);
+			var name = jsPsych.data
+				.get()
+				.select("response")
+			["values"][0]["firstname"].toLowerCase();
+			var email_id = jsPsych.data
+				.get()
+				.select("response")
+			["values"][0]["email_id"].toLowerCase();
+			var age = jsPsych.data.get().select("response")["values"][0]["age"];
+			subject_id =
+				email_id +
+				"-" +
+				subject_id.toString();
+			console.log(subject_id);
+		}
+	};
 	var demogarphics = {
 		type: "survey-text",
 		questions: [
-			{ prompt: "Name : ", columns: 50, name: "firstname" },
+			{ prompt: "Name : ", columns: 50, name: "firstname", required: true },
 			{ prompt: "Age : ", columns: 3, name: "Age", required: true },
 			{
 				prompt: "Gender",
-				columns: 15,
-				name: "Gender",
+				labels: ['Male', 'Female', 'Prefer not to say'],
 				required: true,
 			},
+			// {
+			// 	prompt: "Have you taken this test before?",
+			// 	placeholder: "Yes/No",
+			// 	columns: 15,
+			// 	name: "prior_practice",
+			// },
 			{
-				prompt: "Have you taken this test before?",
-				placeholder: "Yes/No",
-				columns: 15,
-				name: "prior_practice",
-			},
-			{
-				prompt: "Profession",
-				columns: 15,
-				name: "Profession",
+				prompt: "Email ID",
+				columns: 50,
+				name: "email_id",
 				required: true,
 			},
 		],
@@ -220,34 +253,34 @@
 				.select("response")
 			["values"][0]["firstname"].toLowerCase();
 			var age = jsPsych.data.get().select("response")["values"][0]["Age"];
-			var gender = jsPsych.data
+			// var gender = jsPsych.data
+			// 	.get()
+			// 	.select("response")
+			// ["values"][0]["Gender"].toLowerCase();
+			var email_id = jsPsych.data
 				.get()
 				.select("response")
-			["values"][0]["Gender"].toLowerCase();
-			var med = jsPsych.data
-				.get()
-				.select("response")
-			["values"][0]["Profession"].toLowerCase();
-			var test = jsPsych.data
-				.get()
-				.select("response")
-			["values"][0]["prior_practice"].toLowerCase();
-			if (gender === "m") {
-				gender = "1";
+			["values"][0]["email_id"].toLowerCase();
+			// var test = jsPsych.data
+			// 	.get()
+			// 	.select("response")
+			// ["values"][0]["prior_practice"].toLowerCase();
+			// if (gender === "m") {
+			// 	gender = "1";
+			// } else {
+			// 	gender = "0";
+			// }
+			if ((email_id === "Student") | (email_id === "student")) {
+				email_id = "0";
 			} else {
-				gender = "0";
+				email_id = "1";
 			}
-			if ((med === "Student") | (med === "student")) {
-				med = "0";
-			} else {
-				med = "1";
-			}
-			if (test === "yes") {
-				test = "1";
-			} else {
-				test = "0";
-			}
-			console.log(gender);
+			// if (test === "yes") {
+			// 	test = "1";
+			// } else {
+			// 	test = "0";
+			// }
+			// console.log(gender);
 			subject_id =
 				name +
 				"-" +
@@ -257,7 +290,7 @@
 				"-" +
 				test +
 				"-" +
-				med +
+				email_id +
 				"-" +
 				subject_id.toString();
 			console.log(subject_id);
@@ -266,68 +299,21 @@
 			});
 		},
 	};
-
+	var personality_survey_questions_strings = ["Am the life of the party", 
+	"Talk to a lot of different people at parties", "Don't talk a lot", "Keep in the background", 
+	"Sympathize with others' feelings", "Feel others' emotions",
+	"Am not really interested in others", "Am not interested in other people's problems", "Get chores done right away",
+	"Like order", "Often forget to put things back in their proper place", "Make a mess of things", "Have frequent mood swings",
+	"Seldom feel blue", "Get upset easily", "Am relaxed most of the time", "Have a vivid imagination", "Have difficulty understanding abstract ideas", "Am not interested in abstract ideas",
+	"Do not have a good imagination"]
+	var personality_survey_questions = []
+	for (let i = 1; i < personality_survey_questions_strings.length; i++) {
+		let _json_obj = { prompt: `<div style='text-align:left;'> <b> Q${i}. </b>` + personality_survey_questions_strings[i-1] + "</div>", labels: scale, required: true }
+		personality_survey_questions.push(_json_obj)
+	}
 	var personality_survey = {
 		type: "survey-likert",
-		questions: [
-			{ prompt: "Am the life of the party", labels: scale, required: true },
-
-			{
-				prompt: "Talk to a lot of different people at parties",
-				labels: scale,
-				required: true,
-			},
-			{ prompt: "Don't talk a lot", labels: scale, required: true },
-			{ prompt: "Keep in the background", labels: scale, required: true },
-			{
-				prompt: "Sympathize with others' feelings",
-				labels: scale,
-				required: true,
-			},
-			{ prompt: "Feel others' emotions", labels: scale, required: true },
-			{
-				prompt: "Am not really interested in others",
-				labels: scale,
-				required: true,
-			},
-			{
-				prompt: "Am not interested in other people's problems",
-				labels: scale,
-				required: true,
-			},
-			{ prompt: "Get chores done right away", labels: scale, required: true },
-			{ prompt: "Like order", labels: scale, required: true },
-			{
-				prompt: "Often forget to put things back in their proper place",
-				labels: scale,
-				required: true,
-			},
-			{ prompt: "Make a mess of things", labels: scale, required: true },
-			{ prompt: "Have frequent mood swings", labels: scale, required: true },
-			{ prompt: "Get upset easily", labels: scale, required: true },
-			{
-				prompt: "Am relaxed most of the time",
-				labels: scale,
-				required: true,
-			},
-			{ prompt: "Seldom feel blue", labels: scale, required: true },
-			{ prompt: "Have a vivid imagination", labels: scale, required: true },
-			{
-				prompt: "Have difficulty understanding abstract ideas",
-				labels: scale,
-				required: true,
-			},
-			{
-				prompt: "Am not interested in abstract ideas",
-				labels: scale,
-				required: true,
-			},
-			{
-				prompt: "Do not have a good imagination",
-				labels: scale,
-				required: true,
-			},
-		],
+		questions: personality_survey_questions,
 		//randomize_question_order: true,
 		scale_width: 500,
 		preamble:
@@ -412,12 +398,12 @@
 		type: "survey-likert",
 		questions: [
 			{
-				prompt: "<div style='text-align:left;'> <b> Q1. </b> Schrödinger's cat somehow exists in both dead and alive states until the universe is forced to make up its mind. What is this strange situation called?</div>",
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q1. </b> Schrödinger's cat somehow exists in both dead and alive states until the universe is forced to make up its mind. What is this strange situation called?</div>",
 				labels: ["Entanglement of states", "Quantum duality", "A superposition of states", "Quantum relativity"],
 				required: true,
 			},
 			{
-				prompt: "<div style='text-align:left;'> <b> Q2. </b> How is a particle's wavelength and momentum related?</div>",
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b> How is a particle's wavelength and momentum related?</div>",
 				labels: ["inversely related",
 					"directly related",
 					"not related"
@@ -467,7 +453,7 @@
 		type: "survey-likert",
 		questions: [
 			{
-				prompt: "<div style='text-align:left;'> <b> Q1. </b> Which among the following is not correct regarding the crypto currency Bitcoin? </div>",
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q1. </b> Which among the following is not correct regarding the crypto currency Bitcoin? </div>",
 				labels: ["It runs on the technology of block chain",
 					"Bitcoins as a medium of payment is authorized by Reserve Bank of India",
 					"Satoshi Nakamoto introduced Bitcoin to the world",
@@ -475,7 +461,7 @@
 				required: true,
 			},
 			{
-				prompt: "<div style='text-align:left;'> <b> Q2. </b> Transactions ar verified by network nodes through cryptography and recorded in a public distributed ledger called? </div>",
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b> Transactions ar verified by network nodes through cryptography and recorded in a public distributed ledger called? </div>",
 				labels: ["cryptocurrency wallet",
 					"blockchain",
 					"nodes",
@@ -528,12 +514,12 @@
 		type: "survey-likert",
 		questions: [
 			{
-				prompt: "<div style='text-align:left;'> <b> Q1. </b> Old English belongs to which language family? </div>",
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q1. </b> Old English belongs to which language family? </div>",
 				labels: ["Germanic", "Indo-European", "Altaic", "Austronesian"],
 				required: true,
 			},
 			{
-				prompt: "<div style='text-align:left;'> <b> Q2. </b> Which of the following languages is not a distant relative of the English language? </div>",
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b> Which of the following languages is not a distant relative of the English language? </div>",
 				labels: ["Hindi", "Persian", "Celtic", "Japanese"],
 				required: true,
 			},
@@ -543,44 +529,6 @@
 		preamble: '<h2> Please answer the following in context of the watched video </h2>'
 	};
 
-	// var video_trial_4 = {
-	// 	type: "video-button-response",
-	// 	stimulus: [`https://storage.googleapis.com/kddi_assessment_data/four.mp4`],
-	// 	choices: ["Continue"],
-	// 	button_html: '<div style="font-size:40px;">%choice%</div>',
-	// 	margin_vertical: "2px",
-	// 	margin_horizontal: "2px",
-	// 	prompt: video_prompt,
-	// 	width: window.screen.width - 100,
-	// 	height: window.screen.height - 100,
-	// 	autoplay: true,
-	// 	response_ends_trial: true,
-	// 	response_allowed_while_playing: true,
-	// 	data: {
-	// 		time: function () {
-	// 			var n = new Date();
-	// 			return n.getTime();
-	// 		},
-	// 	},
-	// 	on_start: function () {
-	// 		if (!isRecording)
-	// 			mediaRecorder.start()
-	// 		isRecording = true
-	// 	},
-	// 	on_finish: function () {
-	// 		mediaRecorder.stop()
-	// 		isRecording = false;
-	// 	},
-	// 	extensions: [
-	// 		{
-	// 			type: "webgazer",
-	// 			params: {
-	// 				targets: ["#jspsych-video-button-response-stimulus"],
-	// 			},
-
-	// 		},
-	// 	],
-	// };
 	function saveData(data) {
 		var fd = new FormData();
 		blob = new Blob([data["data"]], { type: "text/csv;" });
@@ -642,6 +590,7 @@
 	};
 
 	var timeline = [
+		basic_info,
 		declaration,
 		personality_survey,
 		init_camera,
