@@ -127,22 +127,9 @@
 	var declaration = {
 		type: "survey-likert",
 		questions: [
-			// {
-			// 	prompt: "Does your system have a working webcam?",
-			// 	name: "Webcam",
-			// 	labels: scale_1,
-			// 	required: true,
-			// },
-			// {
-			// 	prompt:
-			// 		"Is your room sufficiently lit with the light being in front of your face rather than back?",
-			// 	name: "Light",
-			// 	labels: scale_1,
-			// 	required: true,
-			// },
 			{
 				prompt:
-					"You voluntarily participate in this study and give your consent to save the data for academic purposes.",
+					"You voluntarily participate in this study and give your consent to save the data for academic and research purposes.",
 				name: "Consent",
 				labels: scale_1,
 				required: true,
@@ -348,9 +335,10 @@
 		choices: jsPsych.NO_KEYS,
 		trial_duration: 2000,
 		on_start: function () {
-			if (!isRecording)
+			if (!isRecording) {
 				mediaRecorder.start()
-			isRecording = true
+				isRecording = true
+			}
 
 			jsPsych.extensions["webgazer"].resume();
 			//jsPsych.extensions["webgazer"].showPredictions();
@@ -435,9 +423,11 @@
 			},
 		},
 		on_start: function () {
-			if (!isRecording)
+			if (!isRecording) {
 				mediaRecorder.start()
-			isRecording = true
+				isRecording = true
+			}
+				
 		},
 		extensions: [
 			{
@@ -496,9 +486,10 @@
 			},
 		},
 		on_start: function () {
-			if (!isRecording)
+			if (!isRecording) {
 				mediaRecorder.start()
-			isRecording = true
+				isRecording = true
+			}
 		},
 		extensions: [
 			{
@@ -616,8 +607,8 @@
 		audio: true,
 		video: {
 			facingMode: "user",
-			width: { min: 640, ideal: 1280, max: 1280 }, // changed max from 1920 
-			height: { min: 480, ideal: 720, max: 720 }, // changed max from 1080
+			width: { min: 640, ideal: 1280, max: 1920 }, // changed max from 1920 
+			height: { min: 480, ideal: 720, max: 1080 }, // changed max from 1080
 			frameRate: { ideal: 30, max: 60 },
 		},
 	};
