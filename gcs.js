@@ -29,7 +29,7 @@ async function uploadFile(src, dest) {
     destination: dest,
   });
 
-  console.log(`${filePath} uploaded to ${bucketName}`);
+  console.log(`${src} uploaded to ${bucketName}`);
 }
 
 module.exports = uploadFile
