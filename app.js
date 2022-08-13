@@ -45,7 +45,7 @@ app.get('/endpage', function (request, response) {
 app.post('/video_data', upload.single('file'), async (req, res) => {
 	console.log(req.file);
 	try {
-		console.log(req.file.filename);
+		console.log('filename', req.file.filename, 'subject id', req.body.subject_id);
 		const result = await uploadFile(req.file.path, req.body.subject_id + '-video.mp4');
 
 		await unlinkFile(req.file.path)
@@ -74,9 +74,9 @@ app.post('/save_data', upload.single('file'), async (request, response) => {
 		// console.log(request.file);
 		const result = await uploadFile(request.file.path, request.body.subject_id + '-data.csv')
 		await unlinkFile(request.file.path)
-		console.log('csv uploadeddddd', result)
+		console.log('csv uploadeddddd')
 
-		response.status(201).send({ success: true });
+		response.status(200).send({ success: true });
 		//await unlinkFile(path);
 
 	} catch (err) {
