@@ -335,6 +335,16 @@
 		stimulus: "Now the Videos will play. When the video pauses, scroll down to click on CONTINUE.",
 		choices: jsPsych.NO_KEYS,
 		trial_duration: 2000,
+		on_start: function () {
+			if (!isRecording) {
+				mediaRecorder.start()
+				isRecording = true
+			}
+			
+			jsPsych.extensions["webgazer"].resume();
+			//jsPsych.extensions["webgazer"].showPredictions();
+			jsPsych.extensions["webgazer"].faceDetected();
+		},
 
 	};
 	var video_prompt = '<div style="width: 1200px;border: thin solid #0000FF ; border-radius: 10px ;">' +
@@ -363,16 +373,6 @@
 				var n = new Date();
 				return n.getTime();
 			},
-		},
-		on_start: function () {
-			if (!isRecording) {
-				mediaRecorder.start()
-				isRecording = true
-			}
-			
-			jsPsych.extensions["webgazer"].resume();
-			//jsPsych.extensions["webgazer"].showPredictions();
-			jsPsych.extensions["webgazer"].faceDetected();
 		},
 		on_finish: () => {
 			chunk_n = 0;
@@ -644,7 +644,7 @@
 	// pushing finish
 	timeline.push(finish);
 	// shuffling over
-	
+
 	let constraintObj = {
 		audio: true,
 		video: {
