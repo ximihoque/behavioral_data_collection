@@ -42,6 +42,7 @@
 	var subject_id = jsPsych.randomization.randomID(10);
 	// console.log(readQuestion('one'));
 	var chunks = [];
+	var _chunks_uploaded = 0;
 	var chunk_n = 0;
 	var max_chunks = 3;
 	var csvSaved = false;
@@ -286,16 +287,16 @@
 			});
 		},
 	};
-	var personality_survey_questions_strings = ["Am the life of the party", 
-	"Talk to a lot of different people at parties", "Don't talk a lot", "Keep in the background", 
-	"Sympathize with others' feelings", "Feel others' emotions",
-	"Am not really interested in others", "Am not interested in other people's problems", "Get chores done right away",
-	"Like order", "Often forget to put things back in their proper place", "Make a mess of things", "Have frequent mood swings",
-	"Seldom feel blue", "Get upset easily", "Am relaxed most of the time", "Have a vivid imagination", "Have difficulty understanding abstract ideas", "Am not interested in abstract ideas",
-	"Do not have a good imagination"]
+	var personality_survey_questions_strings = ["Am the life of the party",
+		"Talk to a lot of different people at parties", "Don't talk a lot", "Keep in the background",
+		"Sympathize with others' feelings", "Feel others' emotions",
+		"Am not really interested in others", "Am not interested in other people's problems", "Get chores done right away",
+		"Like order", "Often forget to put things back in their proper place", "Make a mess of things", "Have frequent mood swings",
+		"Seldom feel blue", "Get upset easily", "Am relaxed most of the time", "Have a vivid imagination", "Have difficulty understanding abstract ideas", "Am not interested in abstract ideas",
+		"Do not have a good imagination"]
 	var personality_survey_questions = []
 	for (let i = 1; i < personality_survey_questions_strings.length; i++) {
-		let _json_obj = { prompt: `<div style='text-align:left;'> <b> Q${i}. </b>` + personality_survey_questions_strings[i-1] + "</div>", labels: scale, required: true }
+		let _json_obj = { prompt: `<div style='text-align:left;'> <b> Q${i}. </b>` + personality_survey_questions_strings[i - 1] + "</div>", labels: scale, required: true }
 		personality_survey_questions.push(_json_obj)
 	}
 	var personality_survey = {
@@ -334,16 +335,7 @@
 		stimulus: "Now the Videos will play. When the video pauses, scroll down to click on CONTINUE.",
 		choices: jsPsych.NO_KEYS,
 		trial_duration: 2000,
-		on_start: function () {
-			if (!isRecording) {
-				mediaRecorder.start()
-				isRecording = true
-			}
 
-			jsPsych.extensions["webgazer"].resume();
-			//jsPsych.extensions["webgazer"].showPredictions();
-			jsPsych.extensions["webgazer"].faceDetected();
-		},
 	};
 	var video_prompt = '<div style="width: 1200px;border: thin solid #0000FF ; border-radius: 10px ;">' +
 		`
@@ -371,6 +363,19 @@
 				var n = new Date();
 				return n.getTime();
 			},
+		},
+		on_start: function () {
+			if (!isRecording) {
+				mediaRecorder.start()
+				isRecording = true
+			}
+			
+			jsPsych.extensions["webgazer"].resume();
+			//jsPsych.extensions["webgazer"].showPredictions();
+			jsPsych.extensions["webgazer"].faceDetected();
+		},
+		on_finish: () => {
+			chunk_n = 0;
 		},
 		extensions: [
 			{
@@ -427,7 +432,9 @@
 				mediaRecorder.start()
 				isRecording = true
 			}
-				
+		},
+		on_finish: () => {
+			chunk_n = 1;
 		},
 		extensions: [
 			{
@@ -490,6 +497,9 @@
 				mediaRecorder.start()
 				isRecording = true
 			}
+		},
+		on_finish: () => {
+			chunk_n = 2;
 		},
 		extensions: [
 			{
@@ -591,18 +601,50 @@
 		validate,
 		fullscreen_trial,
 		video_start_page,
-		video_trial_1,
-		post_video_survey_1,
-		post_video_mandate,
-		video_trial_2,
-		post_video_survey_2,
-		post_video_mandate,
-		video_trial_3,
-		post_video_survey_3,
-		post_video_mandate,
-		finish
-	];
 
+	];
+	// shuffling videos
+	function shuffle(array) {
+		let currentIndex = array.length, randomIndex;
+
+		// While there remain elements to shuffle.
+		while (currentIndex != 0) {
+
+			// Pick a remaining element.
+			randomIndex = Math.floor(Math.random() * currentIndex);
+			currentIndex--;
+
+			// And swap it with the current element.
+			[array[currentIndex], array[randomIndex]] = [
+				array[randomIndex], array[currentIndex]];
+		}
+
+		return array;
+	}
+	var random_trials = [
+		[   video_trial_1,
+			post_video_survey_1,
+			post_video_mandate],
+		[
+			video_trial_2,
+			post_video_survey_2,
+			post_video_mandate],
+		[
+			video_trial_3,
+			post_video_survey_3,
+			post_video_mandate]
+	]
+	random_trials = shuffle(random_trials);
+	// console.log(random_trials)
+	random_trials.forEach(arr => {
+		arr.forEach(e => {
+			timeline.push(e);
+		})
+	})
+	// pushing finish
+	timeline.push(finish);
+	// shuffling over
+	
 	let constraintObj = {
 		audio: true,
 		video: {
@@ -702,6 +744,7 @@
 				//data.append('video', blob);  //Correct: sending the Blob itself
 
 				// TODO: update 
+				console.log("Chunk n: ", chunk_n);
 				var fd = new FormData();
 				fd.append("fname", "test.webm");
 				fd.append("file", blob);
@@ -727,9 +770,9 @@
 					},
 
 					success: function (response) {
-						chunk_n = chunk_n + 1;
+						_chunks_uploaded = _chunks_uploaded + 1;
 						// alert("Video saved at server successfully!");
-						if (chunk_n == max_chunks)
+						if (_chunks_uploaded == max_chunks)
 							videoSaved = true;
 						// console.log('video saved', videoSaved)
 						// console.log('csv saved', csvSaved)
