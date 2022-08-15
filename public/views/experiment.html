@@ -203,7 +203,7 @@
 			var age = jsPsych.data.get().select("response")["values"][0]["age"];
 			subject_id =
 				email_id +
-				"-" +
+				"-" + "random" +
 				subject_id.toString();
 			console.log(subject_id);
 		}
@@ -336,11 +336,11 @@
 		choices: jsPsych.NO_KEYS,
 		trial_duration: 2000,
 		on_start: function () {
-			if (!isRecording) {
-				mediaRecorder.start()
-				isRecording = true
-			}
-			
+			// if (!isRecording) {
+			// 	mediaRecorder.start()
+			// 	isRecording = true
+			// }
+
 			jsPsych.extensions["webgazer"].resume();
 			//jsPsych.extensions["webgazer"].showPredictions();
 			jsPsych.extensions["webgazer"].faceDetected();
@@ -373,6 +373,12 @@
 				var n = new Date();
 				return n.getTime();
 			},
+		},
+		on_start: () => {
+			if (!isRecording) {
+				mediaRecorder.start()
+				isRecording = true
+			}
 		},
 		on_finish: () => {
 			chunk_n = 0;
@@ -622,7 +628,7 @@
 		return array;
 	}
 	var random_trials = [
-		[   video_trial_1,
+		[video_trial_1,
 			post_video_survey_1,
 			post_video_mandate],
 		[
