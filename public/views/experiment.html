@@ -43,12 +43,13 @@
 	// console.log(readQuestion('one'));
 	var chunks = [];
 	var _chunks_uploaded = 0;
-	var chunk_n = 0;
+	var chunk_n;
 	var max_chunks = 3;
 	var csvSaved = false;
 	var videoSaved = false;
 	var mediaRecorder;
 	var isRecording = false;
+	var response_allowed_while_playing = true;
 
 	var scale_1 = ["Yes"];
 	var instructions = {
@@ -154,7 +155,24 @@
 			"</div>",
 		choices: ["Continue"],
 	};
+	// shuffling videos
+	function shuffle(array) {
+		let currentIndex = array.length, randomIndex;
 
+		// While there remain elements to shuffle.
+		while (currentIndex != 0) {
+
+			// Pick a remaining element.
+			randomIndex = Math.floor(Math.random() * currentIndex);
+			currentIndex--;
+
+			// And swap it with the current element.
+			[array[currentIndex], array[randomIndex]] = [
+				array[randomIndex], array[currentIndex]];
+		}
+
+		return array;
+	}
 	// var web_grazer_instruction = {
 	//   type: "html-keyboard-response",
 	//   stimulus:
@@ -355,24 +373,50 @@
 
     </ul>` +
 		"</div>"
-	var video_trial_1 = {
+
+	var PROBE_SURVEY = {
+		type: "survey-likert",
+		questions: [
+			{
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q1. </b> Whether the participant is focused or mindwandered?</div>",
+				labels: ["Focused (thinking related to the lecture)", "Not Focused (mind-wandering; thinking unrelated to the lecture)", "Skip"],
+				required: true,
+			},
+			{
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b> Whether the participant is engaged or not?</div>",
+				labels: ["Highly Engaged",
+					"Engaged",
+					"Barely Engaged",
+					"Not Engaged"
+				],
+				required: true,
+			},
+		],
+		scale_width: 500,
+		// on_finish: function (data) {
+		// 	mediaRecorder.stop();
+		// 	isRecording = false;
+		// 	console.log('stopped recording!')
+		// },
+		preamble: '<h2> Please answer the following: </h2>'
+	}
+
+	var video_trial_1_1 = {
 		type: "video-button-response",
-		stimulus: [`https://storage.googleapis.com/kddi_assessment_data/one.mp4`],
-		choices: ["Continue"],
-		button_html: '<div style="font-size:40px;">%choice%</div>',
-		margin_vertical: "2px",
-		margin_horizontal: "2px",
-		prompt: video_prompt,
-		width: window.screen.width - 100,
-		height: window.screen.height - 100,
+		stimulus: [`/video/one.mp4`],
+		choices: jsPsych.NO_KEYS,
+
 		autoplay: true,
 		response_ends_trial: true,
 		response_allowed_while_playing: false,
+		trial_ends_after_video: true,
+		trial_duration: 40000,
 		data: {
 			time: function () {
 				var n = new Date();
 				return n.getTime();
 			},
+			name: 'video_1_1'
 		},
 		on_start: () => {
 			if (!isRecording) {
@@ -380,32 +424,92 @@
 				isRecording = true
 			}
 		},
-		on_finish: () => {
-			chunk_n = 0;
-		},
-		extensions: [
-			{
-				type: "webgazer",
-				params: {
-					targets: ["#jspsych-video-button-response-stimulus"],
-				},
+		on_finish: (data) => {
+			chunk_n = data.name;
+			console.log('data on finsih', data)
+			mediaRecorder.stop();
+			isRecording = false;
+			console.log('stopped recording!')
 
-			},
-		],
+		},
+		// extensions: [
+		// 	{
+		// 		type: "webgazer",
+		// 		params: {
+		// 			targets: ["#jspsych-video-button-response-stimulus"],
+		// 		},
+
+		// 	},
+		// ],
+		start: 1,
+		stop: 40,
 	};
+
+
+	video_1_duration = 233
+	probe_interval = 40
+	// ------------------------ VIDEO 1 -------------------------
+	PROBE = { ...PROBE_SURVEY }
+	PROBE['data'] = {
+		name: 'video_1_1'
+	}
+	var video_1 = [
+		video_trial_1_1,
+		PROBE_SURVEY
+	]
+	// let i = 1
+	for (let i = 1; i < Math.round(video_1_duration / probe_interval) - 1; i++) {
+		// console.log('here')
+		var video_trial_1_n = { ...video_trial_1_1 }
+		video_trial_1_n['start'] = i * probe_interval
+		video_trial_1_n['stop'] = video_trial_1_n['start'] + 40
+		video_trial_1_n['data'] = {
+			time: function () {
+				var n = new Date();
+				return n.getTime();
+			},
+			name: `video_1_${i + 1}`
+		}
+		video_1.push(video_trial_1_n)
+		PROBE = { ...PROBE_SURVEY }
+		PROBE['data'] = {
+			name: `video_1_${i + 1}`
+		}
+		video_1.push(PROBE)
+	}
+	if (video_1[video_1.length - 1]['stop'] < video_1_duration) {
+		var video_trial_1_n = { ...video_trial_1_1 }
+		video_trial_1_n['start'] = video_1[video_1.length - 1]['stop']
+		video_trial_1_n['stop'] = video_trial_1_n['start'] + 40
+		video_trial_1_n['data'] = {
+			time: function () {
+				var n = new Date();
+				return n.getTime();
+			},
+			name: `video_1_last`
+		}
+		video_1.push(video_trial_1_n)
+		PROBE = { ...PROBE_SURVEY }
+		PROBE['data'] = {
+			name: `video_1_${i + 1}`
+		}
+		video_1.push(PROBE)
+	}
+
 	var post_video_survey_1 = {
 		type: "survey-likert",
 		questions: [
 			{
-				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q1. </b> Schrödinger's cat somehow exists in both dead and alive states until the universe is forced to make up its mind. What is this strange situation called?</div>",
-				labels: ["Entanglement of states", "Quantum duality", "A superposition of states", "Quantum relativity"],
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q1. </b> In Schrödinger's cat experiment, what is the state of the cat in the box at the end of the experiment?</div>",
+				labels: ["The cat is alive", "The cat is dead", "The cat is equal parts alive and dead", "Nothing. It's just a thought experiment"],
 				required: true,
 			},
 			{
-				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b> How is a particle's wavelength and momentum related?</div>",
-				labels: ["inversely related",
-					"directly related",
-					"not related"
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b> The laws of quantum mechanics apply to which of the following objects?</div>",
+				labels: ["An electron or other similarly sized subatomic particle",
+					"Dust",
+					"Cat",
+					"Person"
 				],
 				required: true,
 			},
@@ -414,9 +518,11 @@
 
 		preamble: '<h2> Please answer the following in context of the watched video </h2>'
 	};
+
+	// ============================================= [ END ] - VIDEO 1 ================================================
 	var video_trial_2 = {
 		type: "video-button-response",
-		stimulus: [`https://storage.googleapis.com/kddi_assessment_data/two.mp4`],
+		stimulus: [`/video/two.mp4`],
 		choices: ["Continue"],
 		button_html: '<div style="font-size:40px;">%choice%</div>',
 		margin_vertical: "2px",
@@ -426,7 +532,7 @@
 		height: window.screen.height - 100,
 		autoplay: true,
 		response_ends_trial: true,
-		response_allowed_while_playing: false,
+		response_allowed_while_playing: response_allowed_while_playing,
 		data: {
 			time: function () {
 				var n = new Date();
@@ -481,7 +587,7 @@
 
 	var video_trial_3 = {
 		type: "video-button-response",
-		stimulus: [`https://storage.googleapis.com/kddi_assessment_data/three.mp4`],
+		stimulus: [`/video/three.mp4`],
 		choices: ["Continue"],
 		button_html: '<div style="font-size:40px;">%choice%</div>',
 		margin_vertical: "2px",
@@ -491,7 +597,7 @@
 		height: window.screen.height - 100,
 		autoplay: true,
 		response_ends_trial: true,
-		response_allowed_while_playing: false,
+		response_allowed_while_playing: response_allowed_while_playing,
 		data: {
 			time: function () {
 				var n = new Date();
@@ -597,57 +703,48 @@
 	};
 
 	var timeline = [
-		basic_info,
+		// basic_info,
 		declaration,
-		personality_survey,
-		init_camera,
-		instructions_cal,
-		val,
-		validation_instructions,
-		validate,
-		fullscreen_trial,
+		// personality_survey,
+		// init_camera,
+		// instructions_cal,
+		// val,
+		// validation_instructions,
+		// validate,
+		// fullscreen_trial,
 		video_start_page,
 
 	];
-	// shuffling videos
-	function shuffle(array) {
-		let currentIndex = array.length, randomIndex;
 
-		// While there remain elements to shuffle.
-		while (currentIndex != 0) {
-
-			// Pick a remaining element.
-			randomIndex = Math.floor(Math.random() * currentIndex);
-			currentIndex--;
-
-			// And swap it with the current element.
-			[array[currentIndex], array[randomIndex]] = [
-				array[randomIndex], array[currentIndex]];
-		}
-
-		return array;
-	}
 	var random_trials = [
-		[video_trial_1,
+		[
+			video_1,
 			post_video_survey_1,
 			post_video_mandate],
-		[
-			video_trial_2,
-			post_video_survey_2,
-			post_video_mandate],
-		[
-			video_trial_3,
-			post_video_survey_3,
-			post_video_mandate]
+		// [
+		// 	video_trial_2,
+		// 	post_video_survey_2,
+		// 	post_video_mandate],
+		// [
+		// 	video_trial_3,
+		// 	post_video_survey_3,
+		// 	post_video_mandate]
 	]
-	random_trials = shuffle(random_trials);
-	// console.log(random_trials)
-	random_trials.forEach(arr => {
-		arr.forEach(e => {
-			timeline.push(e);
-		})
-	})
+	// random_trials = shuffle(random_trials);
+	// // Adding videos to be displayed to the timeline
+	// random_trials.forEach(arr => {
+	// 	arr.forEach(e => {
+	// 		timeline.push(e);
+	// 	})
+	// })
 	// pushing finish
+
+	video_1.forEach(e => {
+		timeline.push(e)
+	})
+	// timeline.push(video_trial_1_1)
+	timeline.push(post_video_survey_1)
+
 	timeline.push(finish);
 	// shuffling over
 
@@ -773,6 +870,7 @@
 					},
 					afterSend: function () {
 						// alert("video after send");
+						console.log('video data sent!')
 					},
 
 					success: function (response) {
@@ -780,7 +878,7 @@
 						// alert("Video saved at server successfully!");
 						if (_chunks_uploaded == max_chunks)
 							videoSaved = true;
-						// console.log('video saved', videoSaved)
+						console.log('video saved', videoSaved)
 						// console.log('csv saved', csvSaved)
 						// if (videoSaved && csvSaved)
 						// 	Redirect();
