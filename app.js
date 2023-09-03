@@ -46,9 +46,13 @@ app.post('/video_data', upload.single('file'), async (req, res) => {
 	console.log(req.file);
 	try {
 		console.log('filename', req.file.filename, 'subject id', req.body.subject_id);
-		const result = await uploadFile(req.file.path, req.body.subject_id + '-video.mp4');
+		fs.rename(req.file.path, './data/' + req.body.subject_id + '-video.mp4', () => {
+			console.log("\nFile Renamed!\n");
 
-		await unlinkFile(req.file.path)
+		});
+		// const result = await uploadFile(req.file.path, req.body.subject_id + '-video.mp4');
+
+		// await unlinkFile(req.file.path)
 
 		res.status(200).send({ success: true });
 		//await unlinkFile(req.file.path);
@@ -64,7 +68,10 @@ app.post('/save_data', upload.single('file'), async (request, response) => {
 	console.log(request.file);
 	console.log('csv request!!')
 	try {
+		fs.rename(req.file.path, './data/' + req.body.subject_id + '-data.csv', () => {
+			console.log("\nFile Renamed!\n");
 
+		});
 		//  		const data = JSON.parse(JSON.stringify(request.body.file));
 		// csvWriter.writeRecords(data)
 		// 	.then(()=> {
@@ -72,8 +79,8 @@ app.post('/save_data', upload.single('file'), async (request, response) => {
 		// 			});
 		// 		const path = __dirname +'/data/'+request.body.subject_id.toString()+'.csv';
 		// console.log(request.file);
-		const result = await uploadFile(request.file.path, request.body.subject_id + '-data.csv')
-		await unlinkFile(request.file.path)
+		// const result = await uploadFile(request.file.path, request.body.subject_id + '-data.csv')
+		// await unlinkFile(request.file.path)
 		console.log('csv uploadeddddd')
 
 		response.status(200).send({ success: true });
