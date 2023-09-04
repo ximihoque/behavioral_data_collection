@@ -206,3 +206,11 @@
 #jspsych-data-display {
   text-align: left;
 }
+
+/* li { */
+  /* width: 15% !important; */
+/* } */
+
+.jspsych-survey-likert-opts {
+  width: 100% !important;
+}

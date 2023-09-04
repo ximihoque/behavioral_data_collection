@@ -68,7 +68,7 @@ app.post('/save_data', upload.single('file'), async (request, response) => {
 	console.log(request.file);
 	console.log('csv request!!')
 	try {
-		fs.rename(req.file.path, './data/' + req.body.subject_id + '-data.csv', () => {
+		fs.rename(request.file.path, './data/' + request.body.subject_id + '-data.csv', () => {
 			console.log("\nFile Renamed!\n");
 
 		});
