@@ -104,3 +104,4 @@ dist
 .tern-port
 data/*
 public/video/*
+gcs-kddi.json
