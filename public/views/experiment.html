@@ -50,7 +50,7 @@
 	var mediaRecorder;
 	var isRecording = false;
 	var response_allowed_while_playing = true;
-
+	var SENT_CHECK = false;
 	var scale_1 = ["Yes"];
 	var instructions = {
 		type: "instructions",
@@ -393,109 +393,176 @@
 			},
 		],
 		scale_width: 500,
-		// on_finish: function (data) {
-		// 	mediaRecorder.stop();
-		// 	isRecording = false;
-		// 	console.log('stopped recording!')
-		// },
 		preamble: '<h2> Please answer the following: </h2>'
 	}
-
-	var video_trial_1_1 = {
-		type: "video-button-response",
-		stimulus: [`/video/one.mp4`],
-		choices: jsPsych.NO_KEYS,
-
-		autoplay: true,
-		response_ends_trial: true,
-		response_allowed_while_playing: false,
-		trial_ends_after_video: true,
-		trial_duration: 40000,
-		data: {
-			time: function () {
-				var n = new Date();
-				return n.getTime();
+	var ENGAGE_QUE = {
+		type: "survey-likert",
+		questions: [
+			{
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q1. </b> Did you adjust your eye gaze, head pose, and/or facial expression[s] to convey interest, agreement, or understanding when appropriate?</div>",
+				labels: ["Yes", "No"],
+				required: true,
 			},
-			name: 'video_1_1'
-		},
-		on_start: () => {
-			if (!isRecording) {
-				mediaRecorder.start()
-				isRecording = true
+			{
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b>How did you feel after watching the video? </div>",
+				labels: ["Happy", "Sad", "Excited", "Neutral", "Anxious", "Inspired", "Amused", "Relaxed", "Bored", "Confused"],
+				required: true,
+			},
+			{
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b> Did you encounter any challenges that required you to think critically? </div>",
+				labels: ["Yes", "No"],
+				required: true,
+			},
+			{
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b>Please indicate your level of engagement while watching this video? </div>",
+				labels: ["Highly Engaged",
+					"Engaged",
+					"Barely Engaged",
+					"Not Engaged"
+				],
+				required: true,
+			},
+		],
+		scale_width: 500,
+		preamble: '<h2> Please answer the following with respect to your engagement </h2>'
+	}
+	var NASA_TLX = {
+		type: "survey-likert",
+		questions: [
+			{
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q1. </b> How mentally demanding was the task?</div>",
+				labels: ["Very Low", "1", "2", "Very High"],
+				required: true,
+			},
+			{
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b>How physically demanding was the task? </div>",
+				labels: ["Very Low", "1", "2", "Very High"],
+				required: true,
+			},
+			{
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b>How hurried or rushed was the pace of the task? </div>",
+				labels: ["Very Low", "1", "2", "Very High"],
+				required: true,
+			},
+			{
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b>How successful were you in accomplishing what you were asked to do? </div>",
+				labels: ["Very Low", "1", "2", "Very High"],
+				required: true,
+			},
+			{
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b>How hard did you have to work to accomplish your level of performance? </div>",
+				labels: ["Very Low", "1", "2", "Very High"],
+				required: true,
+			},
+			{
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b>How insecure, discouraged, irritated, stressed, and annoyed were you? </div>",
+				labels: ["Very Low", "1", "2", "Very High"],
+				required: true,
+			},
+		],
+		scale_width: 500,
+		preamble: '<h2> Please answer the following with respect to your engagement </h2>'
+	}
+	// ==================================================== [PROBE CREATION VIDEO SEQ FUNCTION ================================================
+	function create_probing_video_sequence(video_path, video_duration, probe_interval, video_seq, post_questions) {
+		var video_trial = {
+			type: "video-button-response",
+			stimulus: [video_path],
+			choices: jsPsych.NO_KEYS,
+
+			autoplay: true,
+			response_ends_trial: true,
+			response_allowed_while_playing: false,
+			trial_ends_after_video: true,
+			trial_duration: 40000,
+			data: {
+				time: function () {
+					var n = new Date();
+					return n.getTime();
+				},
+				name: `video_${video_seq}_1`
+			},
+			on_start: () => {
+				if (!isRecording) {
+					mediaRecorder.start()
+					isRecording = true
+				}
+			},
+			on_finish: (data) => {
+				chunk_n = data.name;
+				console.log('data on finsih', data)
+				mediaRecorder.stop();
+				isRecording = false;
+				console.log('stopped recording!')
+
+			},
+			start: 0.1,
+			stop: 40,
+		};
+
+		PROBE = { ...PROBE_SURVEY }
+		PROBE['data'] = {
+			name: `video_${video_seq}_1`
+		}
+		var video_1 = [
+			video_trial,
+			PROBE_SURVEY
+		]
+		// let i = 1
+		for (let i = 1; i < Math.round(video_duration / probe_interval) - 1; i++) {
+			// console.log('here')
+			var video_trial_n = { ...video_trial }
+			video_trial_n['start'] = i * probe_interval
+			video_trial_n['stop'] = video_trial_n['start'] + 40
+			video_trial_n['data'] = {
+				time: function () {
+					var n = new Date();
+					return n.getTime();
+				},
+				name: `video_${video_seq}_${i + 1}`
 			}
-		},
-		on_finish: (data) => {
-			chunk_n = data.name;
-			console.log('data on finsih', data)
-			mediaRecorder.stop();
-			isRecording = false;
-			console.log('stopped recording!')
+			video_1.push(video_trial_n)
+			PROBE = { ...PROBE_SURVEY }
+			PROBE['data'] = {
+				name: `video_probe${video_seq}_${i + 1}`
+			}
+			video_1.push(PROBE)
+		}
+		if (video_1[video_1.length - 2]['stop'] < video_duration) {
+			var video_trial_n = { ...video_trial }
+			video_trial_n['start'] = video_1[video_1.length - 2]['stop']
+			video_trial_n['stop'] = video_duration
+			video_trial_n['trial_duration'] = (video_duration - video_trial_n['start']) * 1000
+			video_trial_n['data'] = {
+				time: function () {
+					var n = new Date();
+					return n.getTime();
+				},
+				name: `video_${video_seq}_last`
+			}
+			video_1.push(video_trial_n)
+			PROBE = { ...PROBE_SURVEY }
+			PROBE['data'] = {
+				name: `video_probe${video_seq}_last`
+			}
+			video_1.push(PROBE)
+		}
+		video_1.push(post_questions)
+		var engage = {...ENGAGE_QUE}
+		engage['data'] = {
+			name: `video_engage${video_seq}_last`
 
-		},
-		// extensions: [
-		// 	{
-		// 		type: "webgazer",
-		// 		params: {
-		// 			targets: ["#jspsych-video-button-response-stimulus"],
-		// 		},
-
-		// 	},
-		// ],
-		start: 1,
-		stop: 40,
-	};
-
-
-	video_1_duration = 233
-	probe_interval = 40
-	// ------------------------ VIDEO 1 -------------------------
-	PROBE = { ...PROBE_SURVEY }
-	PROBE['data'] = {
-		name: 'video_1_1'
+		}
+		video_1.push(engage)
+		var nasa_tlx = {...NASA_TLX}
+		nasa['data'] = {
+			name: `video_nasa${video_seq}_last`
+		}
+		video_1.push(nasa)
+		return video_1
 	}
-	var video_1 = [
-		video_trial_1_1,
-		PROBE_SURVEY
-	]
-	// let i = 1
-	for (let i = 1; i < Math.round(video_1_duration / probe_interval) - 1; i++) {
-		// console.log('here')
-		var video_trial_1_n = { ...video_trial_1_1 }
-		video_trial_1_n['start'] = i * probe_interval
-		video_trial_1_n['stop'] = video_trial_1_n['start'] + 40
-		video_trial_1_n['data'] = {
-			time: function () {
-				var n = new Date();
-				return n.getTime();
-			},
-			name: `video_1_${i + 1}`
-		}
-		video_1.push(video_trial_1_n)
-		PROBE = { ...PROBE_SURVEY }
-		PROBE['data'] = {
-			name: `video_1_${i + 1}`
-		}
-		video_1.push(PROBE)
-	}
-	if (video_1[video_1.length - 1]['stop'] < video_1_duration) {
-		var video_trial_1_n = { ...video_trial_1_1 }
-		video_trial_1_n['start'] = video_1[video_1.length - 1]['stop']
-		video_trial_1_n['stop'] = video_trial_1_n['start'] + 40
-		video_trial_1_n['data'] = {
-			time: function () {
-				var n = new Date();
-				return n.getTime();
-			},
-			name: `video_1_last`
-		}
-		video_1.push(video_trial_1_n)
-		PROBE = { ...PROBE_SURVEY }
-		PROBE['data'] = {
-			name: `video_1_${i + 1}`
-		}
-		video_1.push(PROBE)
-	}
-
+	// ================================================================================================================================
+	// ==============================================[ START ] - VIDEO 1 ===============================================
 	var post_video_survey_1 = {
 		type: "survey-likert",
 		questions: [
@@ -518,63 +585,29 @@
 
 		preamble: '<h2> Please answer the following in context of the watched video </h2>'
 	};
-
+	var video_1 = create_probing_video_sequence('/video/one.mp4', 233, 40, 1, post_video_survey_1)
+	
 	// ============================================= [ END ] - VIDEO 1 ================================================
-	var video_trial_2 = {
-		type: "video-button-response",
-		stimulus: [`/video/two.mp4`],
-		choices: ["Continue"],
-		button_html: '<div style="font-size:40px;">%choice%</div>',
-		margin_vertical: "2px",
-		margin_horizontal: "2px",
-		prompt: video_prompt,
-		width: window.screen.width - 100,
-		height: window.screen.height - 100,
-		autoplay: true,
-		response_ends_trial: true,
-		response_allowed_while_playing: response_allowed_while_playing,
-		data: {
-			time: function () {
-				var n = new Date();
-				return n.getTime();
-			},
-		},
-		on_start: function () {
-			if (!isRecording) {
-				mediaRecorder.start()
-				isRecording = true
-			}
-		},
-		on_finish: () => {
-			chunk_n = 1;
-		},
-		extensions: [
-			{
-				type: "webgazer",
-				params: {
-					targets: ["#jspsych-video-button-response-stimulus"],
-				},
 
-			},
-		],
-	};
+	// ==============================================[ START ] - VIDEO 2 ===============================================
+	
 	var post_video_survey_2 = {
 		type: "survey-likert",
 		questions: [
 			{
-				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q1. </b> Which among the following is not correct regarding the crypto currency Bitcoin? </div>",
-				labels: ["It runs on the technology of block chain",
-					"Bitcoins as a medium of payment is authorized by Reserve Bank of India",
-					"Satoshi Nakamoto introduced Bitcoin to the world",
-					"There is no central storage; the bitcoin ledger is distributed"],
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q1. </b>How many different short clips were part of this video? </div>",
+				labels: ["2",
+					"3",
+					"4",
+					"5"],
 				required: true,
 			},
 			{
-				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b> Transactions ar verified by network nodes through cryptography and recorded in a public distributed ledger called? </div>",
-				labels: ["cryptocurrency wallet",
-					"blockchain",
-					"nodes",
-					"cryptocurrency"
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b> What is the key takeaway of the first few videos? </div>",
+				labels: ["It’s smarter to travel in groups",
+					"Safety in numbers",
+					"Collaboration over solitude",
+					"Strength in companionship"
 				],
 				required: true,
 			},
@@ -583,57 +616,29 @@
 
 		preamble: '<h2> Please answer the following in context of the watched video </h2>'
 	};
+	var video_2 = create_probing_video_sequence('/video/funny1.mp4', 110, 40, 2, post_video_survey_2)	
+	// ==============================================[ END ] - VIDEO 2 =================================================
 
-
-	var video_trial_3 = {
-		type: "video-button-response",
-		stimulus: [`/video/three.mp4`],
-		choices: ["Continue"],
-		button_html: '<div style="font-size:40px;">%choice%</div>',
-		margin_vertical: "2px",
-		margin_horizontal: "2px",
-		prompt: video_prompt,
-		width: window.screen.width - 100,
-		height: window.screen.height - 100,
-		autoplay: true,
-		response_ends_trial: true,
-		response_allowed_while_playing: response_allowed_while_playing,
-		data: {
-			time: function () {
-				var n = new Date();
-				return n.getTime();
-			},
-		},
-		on_start: function () {
-			if (!isRecording) {
-				mediaRecorder.start()
-				isRecording = true
-			}
-		},
-		on_finish: () => {
-			chunk_n = 2;
-		},
-		extensions: [
-			{
-				type: "webgazer",
-				params: {
-					targets: ["#jspsych-video-button-response-stimulus"],
-				},
-
-			},
-		],
-	};
+	// ==============================================[ START ] - VIDEO 3 ===============================================
+	
 	var post_video_survey_3 = {
 		type: "survey-likert",
 		questions: [
 			{
-				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q1. </b> Old English belongs to which language family? </div>",
-				labels: ["Germanic", "Indo-European", "Altaic", "Austronesian"],
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q1. </b> Who introduced bitcoin to the world? </div>",
+				labels: ["Vitalik Buterin",
+					"Satoshi Nakamoto",
+					"Mark Zuckerberg",
+					"Tim Berners-Lee"],
 				required: true,
 			},
 			{
-				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b> Which of the following languages is not a distant relative of the English language? </div>",
-				labels: ["Hindi", "Persian", "Celtic", "Japanese"],
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b> Which island is commonly referred to as the “Blockchain Island”? </div>",
+				labels: ["Cyprus",
+					"Singapore",
+					"Malta",
+					"Bermuda"
+				],
 				required: true,
 			},
 		],
@@ -641,6 +646,52 @@
 
 		preamble: '<h2> Please answer the following in context of the watched video </h2>'
 	};
+	var video_3 = create_probing_video_sequence('/video/two.mp4', 294, 40, 3, post_video_survey_3)
+	// ==============================================[ END ] - VIDEO 3 =================================================
+
+	// ==============================================[ START ] - VIDEO 4 ===============================================
+	
+	var post_video_survey_4 = {
+		type: "survey-likert",
+		questions: [
+			{
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q1. </b>Which store did Suppandi visit? </div>",
+				labels: ["Tinker mobile shop", "Tinkle mobile shop", "Twinkle mobile shop", "Tingle mobile shop"],
+				required: true,
+			},
+			{
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b> How many phones did the shopkeeper show to Suppandi? </div>",
+				labels: ["1", "3", "2", "4"],
+				required: true,
+			},
+		],
+		scale_width: 500,
+
+		preamble: '<h2> Please answer the following in context of the watched video </h2>'
+	};
+	var video_4 = create_probing_video_sequence('/video/funny2.mp4', 131, 40, 4, post_video_survey_4)
+	// ==============================================[ END ] - VIDEO 4 =================================================
+
+	// ==============================================[ START ] - VIDEO 5 ===============================================
+	var post_video_survey_5 = {
+		type: "survey-likert",
+		questions: [
+			{
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q1. </b> Which of the following is not a Latin derived romance language? </div>",
+				labels: ["French", "Spanish", "Greek", "Hindi"],
+				required: true,
+			},
+			{
+				prompt: "<div style='text-align:left;font-size: 18px'> <b> Q2. </b> English and Swedish languages descended from which common ancestor? </div>",
+				labels: ["Proto-Germanic", "Old Norse", "Latin", "Sanskrit"],
+				required: true,
+			},
+		],
+		scale_width: 500,
+
+		preamble: '<h2> Please answer the following in context of the watched video </h2>'
+	};
+	var video_5 = create_probing_video_sequence('/video/three.mp4', 285, 40, 5, post_video_survey_5)
 
 	function saveData(data) {
 		var fd = new FormData();
@@ -659,9 +710,11 @@
 			contentType: false,
 			processData: false,
 			timeout: 600000,
-
+			beforeSend: () => {
+				csvSaved = false;
+			},
 			success: (response) => {
-				console.log('csv saved');
+				console.log('csv saveddd');
 				csvSaved = true;
 				// if (videoSaved)
 				// 	Redirect();
@@ -694,9 +747,9 @@
 			};
 			saveData(data);
 			setInterval(() => {
-				console.log('video saved', videoSaved)
+				console.log('video saved', SENT_CHECK)
 				console.log('csv saved', csvSaved)
-				if (videoSaved && csvSaved)
+				if (SENT_CHECK && csvSaved)
 					Redirect();
 			}, 1000)
 		}
@@ -716,37 +769,34 @@
 
 	];
 
-	var random_trials = [
-		[
-			video_1,
-			post_video_survey_1,
-			post_video_mandate],
-		// [
-		// 	video_trial_2,
-		// 	post_video_survey_2,
-		// 	post_video_mandate],
-		// [
-		// 	video_trial_3,
-		// 	post_video_survey_3,
-		// 	post_video_mandate]
+	var stimuli_videos = [
+		video_1,
+		video_3,
+		video_5
+	];
+	stimuli_videos = shuffle(stimuli_videos);
+	var funny_videos= [	
+		video_2,
+		video_4
 	]
-	// random_trials = shuffle(random_trials);
-	// // Adding videos to be displayed to the timeline
-	// random_trials.forEach(arr => {
-	// 	arr.forEach(e => {
-	// 		timeline.push(e);
-	// 	})
-	// })
-	// pushing finish
-
-	video_1.forEach(e => {
-		timeline.push(e)
+	var funny_videos = shuffle(funny_videos);
+	var random_trials = [
+		stimuli_videos[0],
+		funny_videos[0],
+		stimuli_videos[1],
+		funny_videos[1],
+		stimuli_videos[2]
+	]
+	// Adding videos to be displayed to the timeline
+	random_trials.forEach(arr => {
+		arr.forEach(e => {
+			// console.log(e);
+			timeline.push(e);
+		})
 	})
-	// timeline.push(video_trial_1_1)
-	timeline.push(post_video_survey_1)
-
+	// pushing finish
 	timeline.push(finish);
-	// shuffling over
+
 
 	let constraintObj = {
 		audio: true,
@@ -864,6 +914,7 @@
 					timeout: 600000,
 					beforeSend: function () {
 						$("loader").removeClass("hidden");
+						SENT_CHECK = false
 						// alert(
 						// 	"Now data will be uploaded please don't exit. It may take a few minutes."
 						// );
@@ -871,13 +922,15 @@
 					afterSend: function () {
 						// alert("video after send");
 						console.log('video data sent!')
+						SENT_CHECK = false
 					},
 
 					success: function (response) {
-						_chunks_uploaded = _chunks_uploaded + 1;
+						// _chunks_uploaded = _chunks_uploaded + 1;
+						SENT_CHECK = true;
 						// alert("Video saved at server successfully!");
-						if (_chunks_uploaded == max_chunks)
-							videoSaved = true;
+						// if (_chunks_uploaded == max_chunks)
+						// 	videoSaved = true;
 						console.log('video saved', videoSaved)
 						// console.log('csv saved', csvSaved)
 						// if (videoSaved && csvSaved)
