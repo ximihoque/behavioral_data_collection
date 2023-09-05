@@ -6,7 +6,7 @@ const express = require('express'),
 	util = require('util'),
 	unlinkFile = util.promisify(fs.unlink),
 	upload = multer({ dest: __dirname + '/data/' });
-const uploadFile = require('./gcs')
+// const uploadFile = require('./gcs')
 const { v4: uuidv4 } = require('uuid');
 
 
@@ -127,9 +127,14 @@ app.post('/email', function (request, response) {
 		response.status(404).send({ message: "Failed" });
 	}
 });
+const key = fs.readFileSync('./key.pem');
 
+const cert = fs.readFileSync('./cert.pem');
+const https = require('https');
+const server = https.createServer({key: key, cert: cert }, app);
 // --- START THE SERVER 
-var server = app.listen(process.env.PORT || 3000, function () {
+// var server = 
+server.listen(process.env.PORT || 3000, function () {
 	console.log("Listening on port %d", server.address().port);
 });
 

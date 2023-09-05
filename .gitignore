@@ -105,3 +105,4 @@ dist
 data/*
 public/video/*
 gcs-kddi.json
+*.pem

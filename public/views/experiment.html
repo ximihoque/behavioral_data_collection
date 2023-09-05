@@ -555,10 +555,10 @@
 		}
 		video_1.push(engage)
 		var nasa_tlx = {...NASA_TLX}
-		nasa['data'] = {
+		nasa_tlx['data'] = {
 			name: `video_nasa${video_seq}_last`
 		}
-		video_1.push(nasa)
+		video_1.push(nasa_tlx)
 		return video_1
 	}
 	// ================================================================================================================================
@@ -756,9 +756,9 @@
 	};
 
 	var timeline = [
-		// basic_info,
+		basic_info,
 		declaration,
-		// personality_survey,
+		personality_survey,
 		// init_camera,
 		// instructions_cal,
 		// val,
